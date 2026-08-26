@@ -86,7 +86,7 @@ elif page == "⚡ 2. Real-Time Tracking Canvas":
 
     if os.path.exists("realtime_shift.csv"):
         df_rt_display = pd.read_csv("realtime_shift.csv")
-        st.subheader(f"📊 Active Intraday Lead Scans (Updated: {df_rt_display['Last_Updated'].iloc[0] if not df_rt_display.empty else 'N/A'})")
+        st.subheader(f"📊 Active Intraday Lead Scans (Updated: {df_rt_display['Last_Updated'].iloc if not df_rt_display.empty else 'N/A'})")
         for idx, row in df_rt_display.iterrows():
             with st.container():
                 c1, c2, c3, c4 = st.columns(4)
