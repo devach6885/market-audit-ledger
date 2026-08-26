@@ -23,11 +23,9 @@ def run_market_scan_engine():
         processed = []
         for t in WATCHLIST:
             stock = yf.Ticker(t)
-            # Using 1mo period guarantees historical backup values are available even on weekends/nights
             stock_df = stock.history(period="1mo")
             
             if not stock_df.empty:
-                # Remove rows that contain incomplete data fields
                 stock_df = stock_df.dropna(subset=['Open', 'High', 'Low', 'Close'])
                 
                 cl = float(stock_df['Close'].iloc[-1])
