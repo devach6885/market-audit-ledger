@@ -1,0 +1,44 @@
+name: Automated Indian Share Market Engine Execution Pipeline
+
+on:
+  schedule:
+    - cron: '30 4 * * 1-5'  # Runs automatically at 10:00 AM IST (Monday to Friday)
+    - cron: '30 10 * * 1-5' # Runs automatically at 04:00 PM IST (Monday to Friday)
+  workflow_dispatch:        # Keeps manual manual trigger button fully operational inside GitHub web panels
+
+jobs:
+  execute-market-tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Codebase
+        uses: actions/checkout@v4
+
+      - name: Initialize Python Runtime Container
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install System Package Requirements
+        run: pip install yfinance pandas requests
+
+      - name: Determine System Execution Time Window
+        run: |
+          HOUR=$(date +%H)
+          echo "Current UTC hour window triggered: $HOUR"
+          
+          git config --global user.email 'trading_engine@colab.org'
+          git config --global user.name 'Market-Engine'
+          
+          if [ "$HOUR" -lt "8" ]; then
+            echo "🌅 Executing 10:00 AM Morning Forecast Pipeline Script..."
+            python morning_engine.py
+            git add morning_baseline.csv
+            git commit -m "Automated Sync: Updated 10:00 AM Indian Share Market forecasts" --allow-empty
+            git push origin main
+          else
+            echo "📉 Executing 4:00 PM EOD Reconciliation Ledger Audit Script..."
+            python evening_reconciler.py
+            git add historical_ledger.csv
+            git commit -m "Automated Sync: Updated EOD session audit ledger rows" --allow-empty
+            git push origin main
+          fi
