@@ -13,7 +13,6 @@ page = st.sidebar.radio("Navigate Daily Sequence", [
     "📉 3. EOD Audit & Discovery Ledger"
 ])
 
-# High-volume Indian pillars across various sectors
 WATCHLIST = [
     "RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS", "ICICIBANK.NS", 
     "SBIN.NS", "ITC.NS", "WIPRO.NS", "TATAMOTORS.NS", "SUZLON.NS", "AXISBANK.NS"
@@ -21,38 +20,36 @@ WATCHLIST = [
 
 def run_market_scan_engine():
     try:
-        data = yf.download(tickers=WATCHLIST, period="5d", interval="1d", auto_adjust=False, progress=False)
         processed = []
         for t in WATCHLIST:
-            if t in data.columns.levels:
-                stock_df = data[t].dropna(subset=['Close'])
-                if not stock_df.empty:
-                    cl = float(stock_df['Close'].iloc[-1])
-                    op = float(stock_df['Open'].iloc[-1])
-                    hi = float(stock_df['High'].iloc[-1])
-                    lo = float(stock_df['Low'].iloc[-1])
-                    
-                    pct = ((cl - op) / op) * 100 if op > 0 else 0.0
-                    
-                    # Sentiment matrix boundary calculation emulating macro variables
-                    prob = min(max(int(75 + (pct * 12)), 35), 98)
-                    
-                    bp = round(cl, 2)
-                    sp = round(bp * 1.015, 2) # Fixed 1.5% profit target rule
-                    sl = round(bp * 0.992, 2) # Fixed 0.8% stop loss boundary
-                    profit_amt = round(sp - bp, 2)
+            stock = yf.Ticker(t)
+            stock_df = stock.history(period="5d")
+            
+            if not stock_df.empty:
+                cl = float(stock_df['Close'].iloc[-1])
+                op = float(stock_df['Open'].iloc[-1])
+                hi = float(stock_df['High'].iloc[-1])
+                lo = float(stock_df['Low'].iloc[-1])
+                
+                pct = ((cl - op) / op) * 100 if op > 0 else 0.0
+                prob = min(max(int(75 + (pct * 12)), 35), 98)
+                
+                bp = round(cl, 2)
+                sp = round(bp * 1.015, 2)
+                sl = round(bp * 0.992, 2)
+                profit_amt = round(sp - bp, 2)
 
-                    processed.append({
-                        "Company Name": t.replace(".NS", ""),
-                        "Buying Price": bp,
-                        "Selling Price": sp,
-                        "Stop Loss at what Price": sl,
-                        "Profit Amount": profit_amt,
-                        "% that this trade will do book profit": prob,
-                        "High": hi,
-                        "Low": lo,
-                        "Time": datetime.now().strftime("%H:%M:%S")
-                    })
+                processed.append({
+                    "Company Name": t.replace(".NS", ""),
+                    "Buying Price": bp,
+                    "Selling Price": sp,
+                    "Stop Loss at what Price": sl,
+                    "Profit Amount": profit_amt,
+                    "% that this trade will do book profit": prob,
+                    "High": hi,
+                    "Low": lo,
+                    "Time": datetime.now().strftime("%H:%M:%S")
+                })
         return pd.DataFrame(processed).sort_values(by="% that this trade will do book profit", ascending=False).head(10)
     except Exception as e:
         st.error(f"Scan Error: {str(e)}")
@@ -62,6 +59,14 @@ def run_market_scan_engine():
 if page == "🌅 1. Morning Baseline (10:00 AM)":
     st.title("🌅 Morning Baseline Execution Panel (10:00 AM)")
     st.write("Establishes your official morning prediction matrix using active technical profiles and global sentiments.")
+
+    if st.button("🏁 Generate Instant Simulated Test Data Run"):
+        with st.spinner("Simulating daylight share market prices..."):
+            df_test = run_market_scan_engine()
+            if not df_test.empty:
+                df_test.to_csv("morning_baseline.csv", index=False)
+                st.success("🎉 Simulation matrix generated successfully! Refreshing dashboard...")
+                st.rerun()
 
     if os.path.exists("morning_baseline.csv"):
         df_display = pd.read_csv("morning_baseline.csv")
@@ -85,7 +90,7 @@ if page == "🌅 1. Morning Baseline (10:00 AM)":
                     st.markdown(f"**Profit as per amount updated:**\\n<h3 style='color:#2ea84e;'>₹{scaled_p:,}</h3>", unsafe_allowed_html=True)
                 st.markdown("---")
     else:
-        st.info("💡 Awaiting 10:00 AM automated execution run file...")
+        st.info("💡 Awaiting 10:00 AM automated execution run file. Tap the button above to generate mock data right now!")
 
 # ⚡ STATE 2: ACTIVE HOURS PROBABILITY RE-SCAN CANVAS
 elif page == "⚡ 2. Real-Time Tracking Canvas":
@@ -121,7 +126,7 @@ elif page == "⚡ 2. Real-Time Tracking Canvas":
                     st.markdown(f"**Profit as per amount updated:**\\n<h3 style='color:#2ea84e;'>₹{scaled_p:,}</h3>", unsafe_allowed_html=True)
                 st.markdown("---")
 
-# 📉 STATE 3: AUDIT LEDGER (EXACT SHEET HEADERS)
+# 📉 STATE 3: AUDIT LEDGER
 else:
     st.title("📉 Strategic Reconciliation & Performance Audit Ledger")
     st.write("Review historical outcomes with automated loss calculations mapping your exact Google Sheets format.")
