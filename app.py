@@ -23,9 +23,13 @@ def run_market_scan_engine():
         processed = []
         for t in WATCHLIST:
             stock = yf.Ticker(t)
-            stock_df = stock.history(period="5d")
+            # Using 1mo period guarantees historical backup values are available even on weekends/nights
+            stock_df = stock.history(period="1mo")
             
             if not stock_df.empty:
+                # Remove rows that contain incomplete data fields
+                stock_df = stock_df.dropna(subset=['Open', 'High', 'Low', 'Close'])
+                
                 cl = float(stock_df['Close'].iloc[-1])
                 op = float(stock_df['Open'].iloc[-1])
                 hi = float(stock_df['High'].iloc[-1])
@@ -86,7 +90,7 @@ if page == "🌅 1. Morning Baseline (10:00 AM)":
                     st.metric("Stop Loss Price", f"₹{row['Stop Loss at what Price']:.2f}")
                     st.metric("Unit Profit", f"₹{row['Profit Amount']:.2f}")
                 with c4:
-                    st.markdown(f"**% Probability to Book Profit:**\\n## {row['% that this trade will do book profit']}%")
+                    st.markdown(f"**% Probability to Book Profit:**\\n## {int(row['% that this trade will do book profit'])}%")
                     st.markdown(f"**Profit as per amount updated:**\\n<h3 style='color:#2ea84e;'>₹{scaled_p:,}</h3>", unsafe_allowed_html=True)
                 st.markdown("---")
     else:
@@ -103,6 +107,7 @@ elif page == "⚡ 2. Real-Time Tracking Canvas":
             if not df_rt.empty:
                 df_rt.to_csv("realtime_shift.csv", index=False)
                 st.success("🎉 Live dynamic probabilities refreshed successfully!")
+                st.rerun()
 
     if os.path.exists("realtime_shift.csv"):
         df_rt_display = pd.read_csv("realtime_shift.csv")
@@ -122,7 +127,7 @@ elif page == "⚡ 2. Real-Time Tracking Canvas":
                     st.metric("Stop Loss at what Price", f"₹{row['Stop Loss at what Price']:.2f}")
                     st.metric("Profit Amount", f"₹{row['Profit Amount']:.2f}")
                 with c4:
-                    st.markdown(f"**% that this trade will do book profit:**\\n## {row['% that this trade will do book profit']}%")
+                    st.markdown(f"**% that this trade will do book profit:**\\n## {int(row['% that this trade will do book profit'])}%")
                     st.markdown(f"**Profit as per amount updated:**\\n<h3 style='color:#2ea84e;'>₹{scaled_p:,}</h3>", unsafe_allowed_html=True)
                 st.markdown("---")
 
