@@ -86,7 +86,7 @@ elif page == "⚡ 2. Real-Time Tracking Canvas":
 
     if os.path.exists("realtime_shift.csv"):
         df_rt_display = pd.read_csv("realtime_shift.csv")
-        st.subheader(f"📊 Active Intraday Lead Scans (Updated: {df_rt_display['Last_Updated'].iloc[0]})")
+        st.subheader(f"📊 Active Intraday Lead Scans (Updated: {df_rt_display['Last_Updated'].iloc[0] if not df_rt_display.empty else 'N/A'})")
         for idx, row in df_rt_display.iterrows():
             with st.container():
                 c1, c2, c3, c4 = st.columns(4)
@@ -105,9 +105,6 @@ else:
     st.title("📉 Strategic Reconciliation & Performance Audit Ledger")
     st.write("Review your morning baseline predictions versus closing reality, and find the top 10 runners you missed.")
     
-    if os.environ.get("EXECUTE_EOD_TRIGGER") == "TRUE":
-        st.info("🔄 Processing evening reconciliation data sheet calculations...")
-
     if os.path.exists("historical_ledger.csv"):
         df_ledger = pd.read_csv("historical_ledger.csv")
         available_dates = sorted(df_ledger['Date'].unique(), reverse=True)
