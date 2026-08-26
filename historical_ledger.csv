@@ -1,1 +1,1 @@
-Date,Company_Name,Buy_Price,Sell_Price,Stop_Loss,Predict_Correct,Loss_Amount_Per_Share,Why_Prediction_Failed,What_System_Learnt
+Date,Type,Company_Name,Ticker,Buy_Price,Sell_Price,Stop_Loss,Predict_Correct,Loss_Or_Gain,Fail_Reason_Or_Performance
